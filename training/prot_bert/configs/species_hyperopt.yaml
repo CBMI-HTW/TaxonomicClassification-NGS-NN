@@ -1,0 +1,70 @@
+description: ProtTrans | Species | Hyperpara-Opt Experiment Test Run
+data:
+  # Cluster - Avocado
+  train_data: /data/ldap/protein_sequences/data/uniprot_swiss-prot_vbh_p100d_w_train.fasta
+  val_data: /data/ldap/protein_sequences/data/uniprot_swiss-prot_vbh_p100d_w_val.fasta
+  test_data: /data/ldap/protein_sequences/data/uniprot_swiss-prot_vbh_p100d_w_test.fasta
+  pretrained_path: /data/ldap/protein_sequences/original_read_only/models/prot-trans_bert
+  voc_path: /data/ldap/protein_sequences/original_read_only/models/prot-trans_bert/vocab.txt
+  worker: 16
+hyperparameters:
+  global_batch_size:
+    type: categorical
+    vals:
+      - 16
+      - 32
+  classification_feature:
+    type: categorical
+    vals:
+      - 256
+      - 512
+      - 1024
+  classification_dropout:
+    type: double
+    minval: 0.0
+    maxval: 0.5
+  classification_lr: 
+    type: log
+    minval: -4.0
+    maxval: -1.0
+    base: 10
+  bert_lr:
+    type: log
+    minval: -7.0
+    maxval: -3.0
+    base: 10
+  bert_freeze: false
+  sequence_length: 102 # +2 for CLS and SEP Tokens
+# Distributed Training with hyperparameter tuning
+searcher:
+  name: adaptive_asha
+  metric: val_acc
+  smaller_is_better: false
+  # 35592 sequences and batch_size 16 (1GPU) -> 2225 batches per epoch -> 5 epochs = 11125 batches
+  max_length:
+    batches: 11125 # max 5 epochs with batch size of 16
+  max_trials: 15
+min_validation_period:
+  batches: 1000
+# Distribute hyperparameter search; use 2 GPU per trail 
+resources:
+  slots_per_trial: 1
+  max_slots: 8
+  agent_label: pepper-cluster
+checkpoint_storage:
+  save_trial_best: 1
+  save_trial_latest: 0
+  save_experiment_best: 0
+# Docker container used
+environment:
+  image:
+    cpu: "deepprojects/determined-pytorch-1.6-tf-2.2-cpu"
+    gpu: "deepprojects/determined-cuda-10.1-pytorch-1.6-tf-2.2-gpu"
+# Bind Avocado into the docker container
+bind_mounts:
+ - host_path: /data/ldap
+   container_path: /data/ldap
+   read_only: true
+# reproducibility:
+#   experiment_seed: 1602840284
+entrypoint: trails:SpeciesClassification

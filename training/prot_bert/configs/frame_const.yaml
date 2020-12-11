@@ -1,0 +1,47 @@
+description: ProtTrans - Frame (binary) - Single GPU - Bert unfreezed
+data:
+  # Cluster - Avocado
+  train_data: /data/ldap/protein_sequences/data/refseq_ds_all_off-frames_fb_train.fasta
+  val_data: /data/ldap/protein_sequences/data/refseq_ds_all_off-frames_fb_val.fasta
+  test_data: /data/ldap/protein_sequences/data/refseq_ds_all_off-frames_fb_test.fasta
+  pretrained_path: /data/ldap/protein_sequences/original_read_only/models/prot-trans_bert
+  voc_path: /data/ldap/protein_sequences/original_read_only/models/prot-trans_bert/vocab.txt
+  worker: 64
+hyperparameters:
+  global_batch_size: 16
+  classification_feature: 512
+  classification_dropout: 0.1
+  classification_lr: 2e-3
+  bert_lr: 25e-6
+  bert_freeze: false
+  sequence_length: 100
+  reduce_to_binary_problem: true
+# Single run without hyperparameter tuning
+searcher:
+  name: single
+  metric: val_acc
+  smaller_is_better: false
+  max_length:
+    # refseq_ds_all_off-frames_fb:
+    # 10205664 training items and batch_size 16 -> 637854 batches per epoch -> 5 epochs = 3189370 batches
+    # 10205664 training items and batch_size 512 -> 19933 batches per epoch -> 5 epochs = 99665 batches
+    batches: 6378540
+min_validation_period:
+  batches: 637854
+resources:
+  agent_label: pepper-cluster
+checkpoint_storage:
+  save_trial_best: 1
+  save_trial_latest: 0
+  save_experiment_best: 0
+# Docker container used
+environment:
+  image:
+    cpu: "deepprojects/determined-pytorch-1.7-tf-2.2-cpu"
+    gpu: "deepprojects/determined-cuda-10.1-pytorch-1.7-tf-2.2-gpu"
+# Bind Avocado into the docker container
+bind_mounts:
+ - host_path: /data/ldap
+   container_path: /data/ldap
+   read_only: true
+entrypoint: trails:FrameClassification
