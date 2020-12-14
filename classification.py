@@ -17,7 +17,6 @@ from torchnlp.utils import collate_tensors
 from transformers import BertTokenizer
 
 from training.prot_bert.model import ProtTransClassification
-from training.prot_bert.utils import accuracy
 
 
 def parse_args():
@@ -58,12 +57,6 @@ def parse_args():
         help="Number of samples contained in a mini batch (default: 1024)",
     )
     # Classification
-    parser.add_argument(
-        "-rrfc",
-        "--rerun-frame-classification",
-        action="store_true",
-        help="If set, runs the frame classification after the frame correcting again (just for evaluation)",
-    )
     parser.add_argument(
         '-pm',
         '--pretrained-model',
@@ -322,7 +315,6 @@ if __name__ == "__main__":
     # Copy the input and correct (shift) sequence that are of frame
     print("Starting frame correction...")
     results["aa_shifted"] = results["aa"].copy()
-
     mapping = {"1": 2, "2": 1, "3": 3, "4": 5, "5": 4}
     for idx, pred in enumerate(results["frame_pred"]):
         if pred != 0:
@@ -330,11 +322,9 @@ if __name__ == "__main__":
             shifted_aa = Seq(shifted_seq).translate()
             results.at[idx, "aa_shifted"] = " ".join(shifted_aa)
 
-    # Corrected dataset
+    # Create corrected dataset
     shifted_aa_set = Frame_Dataset(results["aa_shifted"])
-    dataloader_frame = DataLoader(
-        shifted_aa_set, num_workers=4, shuffle=False, batch_size=args.batch_size
-    )
+    dataloader_frame = DataLoader(shifted_aa_set, num_workers=4, shuffle=False, batch_size=args.batch_size)
 
     # Get taxonomic classifier
     model_tax = pretrained_models.get_taxonomic_classifier()
@@ -349,7 +339,6 @@ if __name__ == "__main__":
             inputs = pretrained_models.tokenizer.batch_encode_plus(data, add_special_tokens=True, padding=True, truncation=True, max_length=102, return_tensors="pt")
             output = model_tax(inputs["input_ids"].to(device), inputs["token_type_ids"].to(device), inputs["attention_mask"].to(device))
             pred_species.append(output["logits"])
-
     pred_species = torch.cat(pred_species)
     _, pred_species_top1 = torch.max(torch.exp(pred_species), 1)
     results["species_pred"] = pred_species_top1.cpu().detach()
