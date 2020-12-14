@@ -1,7 +1,7 @@
 # Taxonomic Classification of NGS Reads using Language Models
 This repository provides a script for the frame and taxnomic classification of NGS reads. It contains all resources needed to reproduce the results presentet in the work [Taxonomic Classification of NGS Reads using Language Models]().
 
-![Frame Classification](https://redmine.f4.htw-berlin.de/owncloud/index.php/s/HSDM3zJqdER3NAx) ![Taxonomic Classification](https://redmine.f4.htw-berlin.de/owncloud/index.php/s/RRAPKARxeC5KCrF)
+![Frame Classification](https://redmine.f4.htw-berlin.de/owncloud/index.php/core/preview?fileId=822378&x=3840&y=1600&a=true) ![Taxonomic Classification](https://redmine.f4.htw-berlin.de/owncloud/index.php/s/RRAPKARxeC5KCrF)
 
 
 With the script (`classification.py`) you can classify your NGS-reads into the taxonomic domains viruses, bacteria, and mammals. The classification is done by concatenating multiple data processing and sub-classification steps. At first, the frame of a read within its coding sequence must be recognized to translate the DNA sequence fragments into amino acid sequences correctly. This is done by a transformer neural network. Using this information, the read sequences can be translated into amino acid sequences. In a final step, the amino acid sequences are classified into taxonomic domains by another transformer.
