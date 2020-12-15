@@ -66,18 +66,18 @@ class PaperTestSets(torch.utils.data.Dataset):
         self.label_species = []
 
         # Check if test files exist, if not download
-        if not (os.path.isfile("./data/frame/refseq_ds_all_off-frames_fb_DNA_test.fasta")  and os.path.isfile("./data/taxonomic/uniprot_swiss-prot_vbh_p100d_w_test.fasta")):
+        if not (os.path.isfile("./data/refseq/refseq_ds_all_off-frames_fb_DNA_test.fasta") and os.path.isfile("./data/uniprot/uniprot_swiss-prot_vbh_p100d_w_test.fasta")):
             self._download_testsets()
 
         if type == "frame":
-            fasta_file = "./data/frame/refseq_ds_all_off-frames_fb_DNA_test.fasta"
+            fasta_file = "./data/refseq/refseq_ds_all_off-frames_fb_DNA_test.fasta"
         elif type == "taxonomic":
-            fasta_file = "./data/taxonomic/uniprot_swiss-prot_vbh_p100d_w_test.fasta"
+            fasta_file = "./data/uniprot/uniprot_swiss-prot_vbh_p100d_w_test.fasta"
         else:
             print("Illegal type value")
 
         with open(fasta_file) as file:
-            for line in file:
+            for line in tqdm(file):
                 line = line.strip()
                 if line.startswith(">"):
                     self.sequence_id.append(line.split("|")[0])
@@ -113,8 +113,8 @@ class PaperTestSets(torch.utils.data.Dataset):
         """ Downloads the pretrained classification models for a certain model type.
         """
         download_urls = {
-            "frame": "https://redmine.f4.htw-berlin.de/owncloud/index.php/s/JaWXZbosBaB6r4W/download",
-            "taxonomic": "https://redmine.f4.htw-berlin.de/owncloud/index.php/s/RTeykYdPijsGL2w/download"
+            "frame": "https://zenodo.org/record/4306248/files/refseq.tar.gz",
+            "taxonomic": "https://zenodo.org/record/4306240/files/uniprot.tar.gz"
         }
         
         def reporthook(count: int, block_size: int, total_size: int) -> None:
@@ -130,15 +130,15 @@ class PaperTestSets(torch.utils.data.Dataset):
             sys.stdout.flush()
 
         for key in download_urls:
-            subfolder_path = os.path.join("./data", key)
-            create_dir(subfolder_path)
             # Download
+            dir_path = "./data"
+            create_dir(dir_path)
             file_name = download_urls[key].split("/")[-1]
-            file_path = os.path.join(subfolder_path, file_name)
+            file_path = os.path.join(dir_path, file_name)
             urlretrieve(download_urls[key], filename=file_path, reporthook=reporthook)
             print(" - {} successfully downloaded".format(file_name))
             # Unzip
-            shutil.unpack_archive(file_path, extract_dir=subfolder_path, format="gztar")
+            shutil.unpack_archive(file_path, extract_dir=dir_path, format="gztar")
             # Remove downloaded archive
             os.remove(file_path)
 
@@ -273,6 +273,15 @@ def shift_sequence(sequence: str, frame: int) -> str:
     else:
         return str(Seq(sequence[(6-frame):-(frame-3)]).reverse_complement())
 
+def frame_correction(dna_sequences, frame_predictions):
+    mapping = {"0": 0, "1": 2, "2": 1, "3": 3, "4": 5, "5": 4}
+    aa_sequences = []
+    for idx, pred in enumerate(frame_predictions):
+        shifted_seq = shift_sequence(dna_sequences[idx], mapping[str(pred)])
+        shifted_aa = Seq(shifted_seq).translate()
+        aa_sequences.append(" ".join(shifted_aa))
+    return aa_sequences
+
 
 def create_dir(path: str) -> None:
     """Creates (sub-)folder under a given path 
@@ -360,6 +369,99 @@ def plot_roc(predictions, targets, avg_only=False, title="ROC", save_fig=None):
     plt.close()
 
 
+def predict(model, dataloader, save_logits=None):
+    logits = []
+    with torch.no_grad():
+        for data in tqdm(dataloader):
+            inputs = pretrained_models.tokenizer.batch_encode_plus(data, add_special_tokens=True, padding=True, truncation=True, max_length=102, return_tensors="pt")
+            output = model(inputs["input_ids"].to(device), inputs["token_type_ids"].to(device), inputs["attention_mask"].to(device))
+            logits.append(output["logits"])
+    logits = torch.cat(logits)
+    _, preds = torch.max(torch.exp(logits), 1)
+    # Detach and convert to numpy
+    logits = logits.cpu().detach().numpy()
+    preds = preds.cpu().detach().numpy()
+    if save_logits is not None:
+        np.save(save_logits, logits)
+    return logits, preds
+
+
+def reproduce_frame_results(model, batch_size, output_dir):
+    print("Loading Frame Testset")
+    dataset_frame = PaperTestSets("frame")
+    dataloader_frame = DataLoader(dataset_frame, num_workers=4, shuffle=False, batch_size=batch_size, collate_fn=collate_tensors)
+
+    # Create result DataFrame
+    results_frame = pd.DataFrame(data={"seq_id": dataset_frame.sequence_id,
+                                       "dna": dataset_frame.dna_sequence,
+                                       "aa": dataset_frame.aa_sequence,
+                                       "stop_codons": dataset_frame.contains_stop,
+                                       "frame": dataset_frame.label_frame})
+
+    # Get frame classifier
+    model_frame = model
+    # Predict the frames
+    print("Starting frame classification:")
+    frame_logits, results_frame["frame_pred"] = predict(model_frame, dataloader_frame, os.path.join(output_dir, "frame_logits"))
+
+    # Evaluate Frame Classification
+    plot_confusion_heatmap(results_frame["frame"], results_frame["frame_pred"], os.path.join(output_dir, "frame_confusion_matrix.png"), ["Actual Frame"], ["Frame Prediction"], normalize=True)
+    plot_roc(frame_logits, results_frame["frame"].to_numpy(), save_fig=os.path.join(output_dir, "frame_roc.png"))
+    confusion_matrix = pd.crosstab(results_frame["frame"], results_frame["frame_pred"], normalize=True).to_numpy()
+    print("Total Frame Accuracy: ", np.trace(confusion_matrix))
+    for i in range(6):
+        clmn_sum = confusion_matrix[:, i].sum()
+        print("Class", str(i))
+        for j in range(6):
+            print(" Classified as {}: {}".format(str(j), confusion_matrix[i, j] / clmn_sum))
+
+    # Correct Frames and Rerun Frame Classification
+    results_frame["aa_shifted"] = frame_correction(results_frame["dna"], results_frame["frame_pred"])
+    dataloader_frame_cor = DataLoader(Frame_Dataset(results_frame["aa_shifted"]), num_workers=4, shuffle=False, batch_size=batch_size)
+    reframe_logits, results_frame["aa_shifted_frame_pred"] = predict(model_frame, dataloader_frame_cor)
+
+    # Evaluate Frame Re-Classification
+    plot_confusion_heatmap(results_frame["frame"], results_frame["aa_shifted_frame_pred"], os.path.join(output_dir, "frame_confusion_matrix.png"), ["Actual Frame"], ["Frame Prediction"], normalize=True)
+
+    results_frame.to_hdf(os.path.join(output_dir, "results_frame.h5"), key='classification_results', mode='w', format='table')
+
+
+def reproduce_tax_results(model, batch_size, output_dir):
+    # Get Taxonomix Testset
+    dataset_taxonomic = PaperTestSets("taxonomic")
+    dataloader_tax = DataLoader(dataset_taxonomic, num_workers=4, shuffle=False, batch_size=batch_size)
+
+    # Create Result DataFrame for Taxonomic Classification
+    results_tax = pd.DataFrame(data={"seq_id": dataset_taxonomic.sequence_id,
+                                     "aa": dataset_taxonomic.aa_sequence,
+                                     "stop_codons": dataset_taxonomic.contains_stop,
+                                     "species": dataset_taxonomic.label_species})
+
+    # Initialize Taxonomic Classifier
+    model_tax = model
+
+    # Taxonomic Testset Classification
+    print("Starting species classification:")
+    tax_logits, results_tax["species_pred"] = predict(model_tax, dataloader_tax, os.path.join(output_dir, "tax_logits"))
+    
+    # Taxonomic Testset Evaluation
+    plot_confusion_heatmap(results_tax["species"], results_tax["species_pred"], os.path.join(output_dir, "species_confusion_matrix.png"), ["Actual Class"], ["Prediction"], normalize=True)   
+    plot_roc(tax_logits, results_tax["species"].to_numpy(), save_fig=os.path.join(output_dir, "species_roc.png"))
+    confusion_matrix = pd.crosstab(results_tax["species"], results_tax["species_pred"], normalize=True).to_numpy()
+    print("Total Sepcies Accuracy: ", np.trace(confusion_matrix))
+    tax = {"1": "Bacteria", "0": "Virus", "2": "Human"}
+    for i in range(3):
+        clmn_sum = confusion_matrix[:, i].sum()
+        print("Class", tax[str(i)])
+        inner_class_probs = []
+        for j in range(3):
+            inner_class_probs.append(confusion_matrix[j, i] / clmn_sum)
+            print(" Classified as {}: {}".format(tax[str(j)], inner_class_probs[j]))
+        print(np.array(inner_class_probs).sum())
+    
+    results_tax.to_hdf(os.path.join(output_dir, "results_tax.h5"), key='classification_results', mode='w', format='table')
+
+
 if __name__ == "__main__":
     print("Starting script...")
 
@@ -381,141 +483,12 @@ if __name__ == "__main__":
     # Initialize pretrained models
     pretrained_models = PretrainedModels("ProtBert")
 
-    # Prepare data
-    dataset_frame = PaperTestSets("frame")
-    print("Dataset loaded ({} items) ".format(len(dataset_frame)))
-    dataloader_frame = DataLoader(dataset_frame, num_workers=4, shuffle=False, batch_size=args.batch_size, collate_fn=collate_tensors)
+    # Frame Classification
+    reproduce_frame_results(pretrained_models.get_frame_classifier().to(device).eval(), args.batch_size, args.output)
 
-#     # Get frame classifier
-    model_frame = pretrained_models.get_frame_classifier()
-    model_frame.to(device)
-    model_frame.eval()
-
-    # Create result DataFrame
-    results_frame = pd.DataFrame(
-        data={
-            "seq_id": dataset_frame.sequence_id,
-            "dna": dataset_frame.dna_sequence,
-            "aa": dataset_frame.aa_sequence,
-            "stop_codons": dataset_frame.contains_stop,
-            "frame": dataset_frame.label_frame            
-        }
-    )
-
-    # Predict the frames
-    print("Starting frame classification:")
-    pred_frame = []
-    with torch.no_grad():
-        for data in tqdm(dataloader_frame):
-            inputs = pretrained_models.tokenizer.batch_encode_plus(data, add_special_tokens=True, padding=True, truncation=True, max_length=102, return_tensors="pt")
-            output = model_frame(inputs["input_ids"].to(device), inputs["token_type_ids"].to(device), inputs["attention_mask"].to(device))
-            pred_frame.append(output["logits"])
-
-    pred_frame = torch.cat(pred_frame)
-    _, pred_frame_top1 = torch.max(torch.exp(pred_frame), 1)
-    results_frame["frame_pred"] = pred_frame_top1.cpu().detach()
-    # May save the logits
-    np.save(os.path.join(args.output, "data_frame-logits"), pred_frame.cpu().detach().numpy())
-    
-    # Copy the input and correct (shift) sequence that are of frame
-    print("Starting frame correction...")
-    results_frame["aa_shifted"] = results_frame["aa"].copy()
-    mapping = {"1": 2, "2": 1, "3": 3, "4": 5, "5": 4}
-    for idx, pred in enumerate(results_frame["frame_pred"]):
-        if pred != 0:
-            shifted_seq = shift_sequence(results_frame["dna"][idx], mapping[str(pred)])
-            shifted_aa = Seq(shifted_seq).translate()
-            results_frame.at[idx, "aa_shifted"] = " ".join(shifted_aa)
-    print("... finished")
-
-    dataloader_frame_cor = torch.utils.data.DataLoader(Frame_Dataset(results_frame["aa_shifted"]), num_workers=4, shuffle=False, batch_size=args.batch_size)
-
-    # ReRun the Frame Classification to see if we have an improvement
-    print("Starting frame re-classification:")
-    pred_corrected_frame = []
-    with torch.no_grad():
-        for data in tqdm(dataloader_frame_cor):
-            inputs = pretrained_models.tokenizer.batch_encode_plus(
-                data,
-                add_special_tokens=True,
-                padding=True,
-                truncation=True,
-                max_length=102,
-                return_tensors="pt",
-            )
-
-            output = model_frame(inputs["input_ids"].to(device), inputs["token_type_ids"].to(device), inputs["attention_mask"].to(device))
-            _, frame_shift_pred = torch.max(torch.exp(output["logits"]), 1)
-            pred_corrected_frame.append(frame_shift_pred)
-    pred_corrected_frame = torch.cat(pred_corrected_frame)
-    results_frame["aa_shifted_frame_pred"] = pred_corrected_frame.cpu().detach()
-
-    # Create corrected dataset
-    dataset_taxonomic = PaperTestSets("taxonomic")
-    dataloader_frame = DataLoader(dataset_taxonomic, num_workers=4, shuffle=False, batch_size=args.batch_size)
-
-    # Create result DataFrame
-    results_tax = pd.DataFrame(
-        data={
-            "seq_id": dataset_taxonomic.sequence_id,
-            "aa": dataset_taxonomic.aa_sequence,
-            "stop_codons": dataset_taxonomic.contains_stop,
-            "species": dataset_taxonomic.label_species            
-        }
-    )
-    # Get taxonomic classifier
-    model_tax = pretrained_models.get_taxonomic_classifier()
-    model_tax.to(device)
-    model_tax.eval()
-
-    # Taxonomix classification
-    print("Starting species classification:")
-    pred_species = []
-    with torch.no_grad():
-        for data in tqdm(dataloader_frame):
-            inputs = pretrained_models.tokenizer.batch_encode_plus(data, add_special_tokens=True, padding=True, truncation=True, max_length=102, return_tensors="pt")
-            output = model_tax(inputs["input_ids"].to(device), inputs["token_type_ids"].to(device), inputs["attention_mask"].to(device))
-            pred_species.append(output["logits"])
-    pred_species = torch.cat(pred_species)
-    _, pred_species_top1 = torch.max(torch.exp(pred_species), 1)
-    results_tax["species_pred"] = pred_species_top1.cpu().detach()
-    # May save the logits
-    np.save(os.path.join(args.output, "data_species-logits"), pred_species.cpu().detach().numpy())
+    # Taxonomic Classification
+    reproduce_tax_results(pretrained_models.get_taxonomic_classifier().to(device).eval(), args.batch_size, args.output)    
 
 
-    ##############
-    # Evaluation #
-    ##############
-    # Confusion matrix
-    plot_confusion_heatmap(results_frame["frame"], results_frame["frame_pred"], os.path.join(args.output, "frame_confusion_matrix.png"), ["Actual Frame"], ["Frame Prediction"], normalize=True)
-    plot_confusion_heatmap(results_frame["frame"], results_frame["aa_shifted_frame_pred"], os.path.join(args.output, "frame_shifted_confusion_matrix.png"), [" "], ["Frame Prediction"], normalize=True)
-    plot_confusion_heatmap(results_tax["species"], results_tax["species_pred"], os.path.join(args.output, "species_confusion_matrix.png"), ["Actual Class"], ["Prediction"], normalize=True)
-
-    # ROC
-    plot_roc(pred_frame.cpu().detach().numpy(), results_frame["frame"].to_numpy(), save_fig=os.path.join(args.output, "frame_roc.png"))
-    plot_roc(pred_species.cpu().detach().numpy(), results_tax["species"].to_numpy(), save_fig=os.path.join(args.output, "species_roc.png"))
-
-    # Accuracy
-    confusion_matrix = pd.crosstab(results_frame["frame"], results_frame["frame_pred"], normalize=True).to_numpy()
-    print("Total Frame Accuracy: ", np.trace(confusion_matrix))
-    for i in range(6):
-        clmn_sum = confusion_matrix[:, i].sum()
-        print("Class", str(i))
-        for j in range(6):
-            print(" Classified as {}: {}".format(str(j), confusion_matrix[i, j] / clmn_sum))
-    print(30*"-")
-    confusion_matrix = pd.crosstab(results_tax["species"], results_tax["species_pred"], normalize=True).to_numpy()
-    print("Total Sepcies Accuracy: ", np.trace(confusion_matrix))
-    tax = {"1": "Bacteria", "0": "Virus", "2": "Human"}
-    for i in range(3):
-        clmn_sum = confusion_matrix[:, i].sum()
-        print("Class", tax[str(i)])
-        inner_class_probs = []
-        for j in range(3):
-            inner_class_probs.append(confusion_matrix[j, i] / clmn_sum)
-            print(" Classified as {}: {}".format(tax[str(j)], inner_class_probs[j]))
-        print(np.array(inner_class_probs).sum())
-
-
-print("All results successfully stored in the folder {}".format(args.output))
-print("... script finished.")
+    print("All results successfully stored in the folder {}".format(args.output))
+    print("... script finished.")
