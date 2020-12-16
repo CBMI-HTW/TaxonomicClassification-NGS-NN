@@ -23,7 +23,7 @@ Note, since the environment contains a [PyTorch](https://pytorch.org/) version w
 
 
 ## Usage
-To classify your NGS reads, you can use the `classification.py` script. The script will take a file in [FASTA](https://en.wikipedia.org/wiki/FASTA_format) format as input and will output that file with an enriched header line (`>`) containing the results, i.e., ` source header line | STOP codon found? | frame classification | taxonomic classification`. At the moment the script expects the file to be clear of comments (`;`).
+To classify your NGS reads, you can use the `classification.py` script. The script will take a file in [FASTA](https://en.wikipedia.org/wiki/FASTA_format) format as input and will output that file with an enriched header line (`>`) containing the results, i.e., ` source header line | STOP codon found? | frame classification | taxonomic classification`. At the moment, the script expects the file to be clear of comments (`;`).
 
 ```
 # Example of two lines from an input file
@@ -35,9 +35,9 @@ LCLYTHIGRNIYYGSYLYSETWNTGIMLLLITMATAFMGYVLPWGQMSFWGATVITNLFSAIPYIGTNLVEWIWGGFSVD
 LCLYTHIGRNIYYGSYLYSETWNTGIMLLLITMATAFMGYVLPWGQMSFWGATVITNLFSAIPYIGTNLVEWIWGGFSVDKATLNRFFAFHFILPFTMVA
 ```
 
-Possible result values for the frame classification are 0-5 (0: on-frame, 1: offset by one base, 2: offset by two bases, 3: reverse-complementary, 4: reverse-complementary and offset by one base, 5: reverse complementary and offset by two bases). Possible classes for the taxonomic classification are 0: viral, 1: bacterial and 2: mammels.
+Possible result values for the frame classification are 0-5 (0: on-frame, 1: offset by one base, 2: offset by two bases, 3: reverse-complementary, 4: reverse-complementary and offset by one base, 5: reverse complementary and offset by two bases). Possible classes for the taxonomic classification are 0: viral, 1: bacterial and 2: mammals.
 
-The only argument required by the script is `--input` the path to the FASTA file you like to classify. All optional arguments can be viewed using the `--help` flag. First execution of the script will download the pre-trained models used in the process automatically. A few example calls are:
+The only argument required by the script is `--input` the path to the FASTA file you like to classify. All optional arguments can be viewed using the `--help` flag. The First execution of the script will download the pre-trained models used in the process automatically. A few example calls are:
 
 ```
 # Standard call
@@ -53,16 +53,30 @@ python classification.py -i /path/to/my/file.fasta -o /save/results/here
 
 
 ## Pre-Trained Models and Dataset
-Final datasets and models (PyTorch version) used for the published experiments are public avaiable under Creative [Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/legalcode) License. Executing the `classification.py` or `reproduce.py` script will trigger automatic download of the necessary models/datasets.
+Final datasets and models (PyTorch version) used for the published experiments are publicly available under Creative [Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/legalcode) License. Executing the provided `classification.py` or `reproduce_results.py` script files will automatically download the necessary models/datasets.
 
 *Datasets*
 - [Training: Frame Classification](https://zenodo.org/record/4306248)
+- [Testing: Frame Classification](https://zenodo.org/record/4306248)
 - [Training: Taxonomic Classification](https://zenodo.org/record/4306240)
 - [Testing: Taxonomic Classification](https://zenodo.org/record/4307779)
 
 *PyTorch Models*
 - [Frame Classification StateDict](https://zenodo.org/record/4306420)
 - [Taxonomic Classification StateDict](https://zenodo.org/record/4306499)
+
+
+## Reproduce Paper Results
+To reproduce the figures and accuracy values reported in the paper, you can execute the `reproduce_results.py`. The script will download all necessary resources (final models and test datasets) and calculate the used metrics. By default, all results will be saved in a folder called `paper-results`. Due to the size of the test datasets, the calculation time is relatively high. We recommend the usage of a GPU if you want to reproduce the results. The script's execution time using an NVIDIA RTX 3090 with a batch size of 1024 is about 5 hours.
+
+```
+# Standard call; use --help flag to see all arguments.
+python reproduce_results.py
+
+# Change batch_size
+python reproduce_results.py -bs 512
+```
+
 
 ## License
 Distributed under the LGPL-2.1 License. See [LICENSE](LICENSE.md) for more information.
