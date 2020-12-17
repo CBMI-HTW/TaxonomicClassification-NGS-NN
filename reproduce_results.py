@@ -7,7 +7,7 @@ import torch
 from torch.utils.data import DataLoader
 from torchnlp.utils import collate_tensors
 from src.utils import create_dir, plot_confusion_heatmap, plot_roc, accuracy_to_stdout, frame_correction
-from src.test_data import Frame_Dataset, SequenceReadingsDataset
+from src.data import Frame_Dataset, SequenceReadingsDataset
 from src.pretrained_model import PretrainedModels, predict
 
 

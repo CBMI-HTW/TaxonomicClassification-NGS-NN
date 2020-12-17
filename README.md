@@ -11,9 +11,10 @@ With the script `classification.py` you can classify your NGS-reads into the tax
 
 In order to run the scripts, you need to install the appropriate dependencies. We provide an `environment.yml` for conda and `environment.txt` for pip to clone the virtual environment used. 
 
-```
+```bash
 # Create venv using conda
-conda env create -f environment.yml
+conda env create --name tcngs --file environment.txt
+conda activate tcngs
 
 # Create venv using pip
 pip install -r environment.txt

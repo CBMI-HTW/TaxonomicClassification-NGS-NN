@@ -6,7 +6,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 from torchnlp.utils import collate_tensors
-from src.test_data import Frame_Dataset, SequenceReadingsDataset
+from src.data import Frame_Dataset, SequenceReadingsDataset
 from src.pretrained_model import PretrainedModels, predict
 from src.utils import create_dir, frame_correction
 
