@@ -62,7 +62,7 @@ class PretrainedModels():
                          "taxonomic": ["https://zenodo.org/record/4306499/files/metadata.json",
                                        "https://zenodo.org/record/4306499/files/state_dict.pth"]}
         }
-        
+
         def reporthook(count: int, block_size: int, total_size: int) -> None:
             global start_time
             if count == 0:
