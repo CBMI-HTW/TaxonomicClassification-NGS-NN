@@ -50,7 +50,7 @@ LCLYTHIGRNIYYGSYLYSETWNTGIMLLLITMATAFMGYVLPWGQMSFWGATVITNLFSAIPYIGTNLVEWIWGGFSVD
 
 Possible result values for the frame classification are 0-5 (0: on-frame, 1: offset by one base, 2: offset by two bases, 3: reverse-complementary, 4: reverse-complementary and offset by one base, 5: reverse complementary and offset by two bases). Possible classes for the taxonomic classification are 0: viral, 1: bacterial and 2: mammals.
 
-The only argument required by the script is `--input` the path to the FASTA file you like to classify. All optional arguments can be viewed using the `--help` flag. The First execution of the script will download the pre-trained models used in the process automatically. A few example calls are (**If you using poetry put a `poetry run` infront of the python call or activate the poetry venv `poetry shell` **):
+The only argument required by the script is `--input` the path to the FASTA file you like to classify. All optional arguments can be viewed using the `--help` flag. The First execution of the script will download the pre-trained models used in the process automatically. A few example calls are (**If you using poetry put a `poetry run` infront of the python call or activate the poetry venv `poetry shell`**):
 
 ```
 # Standard call
