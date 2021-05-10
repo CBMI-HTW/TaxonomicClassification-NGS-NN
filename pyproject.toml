@@ -12,7 +12,7 @@ pytorch-nlp = "^0.5.0"
 scikit-learn = "^0.24.2"
 bio = "^0.4.1"
 transformers = "^4.5.1"
-torch = {version = "^1.8.1", python = "^3.9", platform = "linux"}
+torch = "^1.8.1"
 
 [tool.poetry.dev-dependencies]
 
