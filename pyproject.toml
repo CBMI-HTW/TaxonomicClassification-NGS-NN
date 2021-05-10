@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "protein-external"
+version = "0.1.0"
+description = ""
+authors = ["bensnajdar <bensnajdar@posteo.net>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pandas = "^1.2.4"
+seaborn = "^0.11.1"
+pytorch-nlp = "^0.5.0"
+scikit-learn = "^0.24.2"
+bio = "^0.4.1"
+transformers = "^4.5.1"
+torch = {version = "^1.8.1", python = "^3.9", platform = "linux"}
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
