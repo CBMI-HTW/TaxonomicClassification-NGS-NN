@@ -9,11 +9,11 @@ With the script `classification.py` you can classify your NGS-reads into the tax
 
 ## Requirements
 
-In order to run the scripts, you need to install the appropriate dependencies. We provide `environment.txt` for pip to clone the virtual environment used. 
+In order to run the scripts, you need to install the appropriate dependencies. We provide `requirements.txt` for pip to clone the virtual environment used. 
 
 ```bash
 # Create venv using pip
-pip install -r environment.txt
+pip install -r requirements.txt
 ```
 
 Note, since the environment contains a [PyTorch](https://pytorch.org/) version with gpu support (Cuda 11.0), these environments may not work for you depending on your hardware configuration.
