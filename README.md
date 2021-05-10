@@ -9,14 +9,25 @@ With the script `classification.py` you can classify your NGS-reads into the tax
 
 ## Requirements
 
-In order to run the scripts, you need to install the appropriate dependencies. We provide `requirements.txt` for pip to clone the virtual environment used. 
+In order to run the scripts, you need to install the appropriate dependencies. We use [poetry](https://python-poetry.org/) for denpedency management. We refer to peotry documentation for installtion instructions. Once poetry is installed you can install the dependecies with:
 
 ```bash
-# Create venv using pip
-pip install -r requirements.txt
+# Install dependencies
+peotry install
 ```
 
-Note, since the environment contains a [PyTorch](https://pytorch.org/) version with gpu support (Cuda 11.0), these environments may not work for you depending on your hardware configuration.
+Note, since the environment contains a [PyTorch](https://pytorch.org/) this setup is maybe not optimal for you. Since the standard pytorch package is not supporting _GPUs_, we strongly recommand replacing the [PyTorch](https://pytorch.org/) version with one that is suited for your enviroment and hardware configuration. If you do not get the poetry version running install following dependencies manually in a python virtual enviroment.
+
+```bash
+pip install pandas seaborn scikit-learn, bio
+
+# Install a suitable PyTorch version, e.g. with CUDA 10.2 support
+pip install torch torchvision torchaudio
+
+# And final install packeges relying on PyTorch
+pip install pytorch-nlp, transformers
+
+```
 
 
 ## Usage
@@ -68,10 +79,10 @@ To reproduce the figures and accuracy values reported in the paper, you can exec
 
 ```
 # Standard call; use --help flag to see all arguments.
-python reproduce_results.py
+poetry run python reproduce_results.py
 
 # Change batch_size
-python reproduce_results.py -bs 512
+poetry run python reproduce_results.py -bs 512
 ```
 
 
