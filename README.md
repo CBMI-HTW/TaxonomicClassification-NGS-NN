@@ -30,7 +30,7 @@ If you do not get the poetry version running, install following dependencies man
 ```bash
 pip install pandas seaborn scikit-learn, bio
 
-# Install a suitable PyTorch version, e.g. with CUDA 10.2 support
+# Install a suitable PyTorch version, e.g. with CUDA 10.2 support. Use https://pytorch.org/ to find your suited version.
 pip install torch torchvision torchaudio
 
 # And final install packeges relying on PyTorch
