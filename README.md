@@ -8,7 +8,7 @@ With the script `classification.py` you can classify your NGS-reads into the tax
 
 
 ## Requirements
-
+#### Using Poetry
 In order to run the scripts, you need to install the appropriate dependencies. We use [poetry](https://python-poetry.org/) for denpedency management. We refer to peotry documentation for installtion instructions. Once poetry is installed you can install the dependecies with:
 
 ```bash
@@ -24,7 +24,8 @@ poetry shell
 pip install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
 ```
 
- If you do not get the poetry version running, install following dependencies manually in a python virtual enviroment.
+#### Without Poetry
+If you do not get the poetry version running, install following dependencies manually in a python virtual enviroment.
 
 ```bash
 pip install pandas seaborn scikit-learn, bio
