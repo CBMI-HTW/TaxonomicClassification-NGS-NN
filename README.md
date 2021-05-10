@@ -14,6 +14,11 @@ In order to run the scripts, you need to install the appropriate dependencies. W
 ```bash
 # Install dependencies
 poetry install
+
+# You can replace the PyTorch version with one that suits your hardware configuration 
+# by replacing the version in the poetry venv, e.g. GPU/CUDA11 support:
+poetry shell
+pip install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
 ```
 
 Note, since the environment contains a [PyTorch](https://pytorch.org/) this setup is maybe not optimal for you. Since the standard pytorch package is not supporting _GPUs_, we strongly recommand replacing the [PyTorch](https://pytorch.org/) version with one that is suited for your enviroment and hardware configuration. If you do not get the poetry version running, install following dependencies manually in a python virtual enviroment.
