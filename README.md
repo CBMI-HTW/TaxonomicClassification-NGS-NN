@@ -13,10 +13,10 @@ In order to run the scripts, you need to install the appropriate dependencies. W
 
 ```bash
 # Install dependencies
-peotry install
+poetry install
 ```
 
-Note, since the environment contains a [PyTorch](https://pytorch.org/) this setup is maybe not optimal for you. Since the standard pytorch package is not supporting _GPUs_, we strongly recommand replacing the [PyTorch](https://pytorch.org/) version with one that is suited for your enviroment and hardware configuration. If you do not get the poetry version running install following dependencies manually in a python virtual enviroment.
+Note, since the environment contains a [PyTorch](https://pytorch.org/) this setup is maybe not optimal for you. Since the standard pytorch package is not supporting _GPUs_, we strongly recommand replacing the [PyTorch](https://pytorch.org/) version with one that is suited for your enviroment and hardware configuration. If you do not get the poetry version running, install following dependencies manually in a python virtual enviroment.
 
 ```bash
 pip install pandas seaborn scikit-learn, bio
@@ -45,7 +45,7 @@ LCLYTHIGRNIYYGSYLYSETWNTGIMLLLITMATAFMGYVLPWGQMSFWGATVITNLFSAIPYIGTNLVEWIWGGFSVD
 
 Possible result values for the frame classification are 0-5 (0: on-frame, 1: offset by one base, 2: offset by two bases, 3: reverse-complementary, 4: reverse-complementary and offset by one base, 5: reverse complementary and offset by two bases). Possible classes for the taxonomic classification are 0: viral, 1: bacterial and 2: mammals.
 
-The only argument required by the script is `--input` the path to the FASTA file you like to classify. All optional arguments can be viewed using the `--help` flag. The First execution of the script will download the pre-trained models used in the process automatically. A few example calls are:
+The only argument required by the script is `--input` the path to the FASTA file you like to classify. All optional arguments can be viewed using the `--help` flag. The First execution of the script will download the pre-trained models used in the process automatically. A few example calls are (**If you using poetry put a `poetry run` infront of the python call or activate the poetry venv `poetry shell` **):
 
 ```
 # Standard call
@@ -78,11 +78,12 @@ Final datasets and models (PyTorch version) used for the published experiments a
 To reproduce the figures and accuracy values reported in the paper, you can execute the `reproduce_results.py`. The script will download all necessary resources (final models and test datasets) and calculate the used metrics. By default, all results will be saved in a folder called `paper-results`. Due to the size of the test datasets, the calculation time is relatively high. We recommend the usage of a GPU if you want to reproduce the results. The script's execution time using an NVIDIA RTX 3090 with a batch size of 1024 is about 5 hours.
 
 ```
-# Standard call; use --help flag to see all arguments.
-poetry run python reproduce_results.py
+# Standard call; use --help flag to see all arguments using poetry.
+python reproduce_results.py
 
-# Change batch_size
-poetry run python reproduce_results.py -bs 512
+# Without poetry
+python reproduce_results.py
+
 ```
 
 
