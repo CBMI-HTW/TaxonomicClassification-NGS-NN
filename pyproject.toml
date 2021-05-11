@@ -5,7 +5,7 @@ description = ""
 authors = ["bensnajdar <bensnajdar@posteo.net>"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.8"
 pandas = "^1.2.4"
 seaborn = "^0.11.1"
 pytorch-nlp = "^0.5.0"
