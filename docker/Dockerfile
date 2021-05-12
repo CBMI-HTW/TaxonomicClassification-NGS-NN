@@ -38,7 +38,7 @@ RUN cd TaxonomicClassification-NGS-NN && POETRY_VIRTUALENVS_CREATE=false poetry 
 # torch cuda packages
 RUN pip3 install --no-cache-dir torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
 
-# nvidia-container-runtime (for opengl support inside container)
+# nvidia-container-runtime
 ENV NVIDIA_VISIBLE_DEVICES \
     ${NVIDIA_VISIBLE_DEVICES:-all}
 ENV NVIDIA_DRIVER_CAPABILITIES \
@@ -47,4 +47,9 @@ ENV NVIDIA_DRIVER_CAPABILITIES \
 # clean up
 RUN rm -rf /var/lib/apt/lists/*
 
-ENTRYPOINT cd /workspace/TaxonomicClassification-NGS-NN && python3 reproduce_results.py
+# set ENVs for optional passing arguments
+ENV BATCH_SIZE=1024
+ENV OUTPUT="./paper-results"
+
+# set entrypoint to automatically run reproduce_results.py on container start
+ENTRYPOINT cd /workspace/TaxonomicClassification-NGS-NN && exec python3 reproduce_results.py --batch-size $BATCH_SIZE --output $OUTPUT
