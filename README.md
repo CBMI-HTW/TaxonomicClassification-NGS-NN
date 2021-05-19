@@ -24,7 +24,7 @@ poetry shell
 pip install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
 ```
 
-#### Without Poetry
+#### Install Pckages via Pip
 If you do not get the poetry version running, install following dependencies manually in a python virtual enviroment.
 
 ```bash
@@ -35,6 +35,26 @@ pip install torch torchvision torchaudio
 
 # And final install packeges relying on PyTorch
 pip install pytorch-nlp, transformers
+
+```
+
+#### Using Docker
+We provide a [Docker](https://www.docker.com/get-started) container with a predefiened environment for the `classification` and `reproduce_results` script.
+
+```
+# rebuild the container using the docker file
+docker build -f Dockerfile -t deepprojects/tcngs:1.0.2 .
+
+# Start the container and run the `reproduce_results` script
+docker run deepprojects/tcngs:latest
+
+# Run the docker container and execute the `reproduce_results` script with user specified argements
+docker run \
+    --env "BATCH_SIZE=64" \
+    --env "OUTPUT='/mnt'" \
+    --volume /home/$(whoami)/workspace:/mnt/ \
+    deepprojects/tcngs:latest
+
 
 ```
 
