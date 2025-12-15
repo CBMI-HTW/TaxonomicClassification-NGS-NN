@@ -87,8 +87,8 @@ class SequenceReadingsDataset(torch.utils.data.Dataset):
         download_urls = {
             "frame": "https://zenodo.org/record/4306248/files/refseq.tar.gz",
             "taxonomic": "https://zenodo.org/record/4306240/files/uniprot.tar.gz",
-            "SRR": "https://redmine.f4.htw-berlin.de/owncloud/index.php/s/NoXtz6ezSZHPB6T/download",
-            "inORF": "https://redmine.f4.htw-berlin.de/owncloud/index.php/s/REkM3Zi5K8n9QW2/download"
+            # "SRR": "https://redmine.f4.htw-berlin.de/owncloud/index.php/s/NoXtz6ezSZHPB6T/download",
+            # "inORF": "https://redmine.f4.htw-berlin.de/owncloud/index.php/s/REkM3Zi5K8n9QW2/download"
         }
         
         def reporthook(count: int, block_size: int, total_size: int) -> None:
