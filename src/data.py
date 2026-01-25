@@ -109,7 +109,8 @@ class SequenceReadingsDataset(torch.utils.data.Dataset):
             #if key == "SRR" and os.path.isfile("./data/srr/SRR2940986_filtered.fasta"): continue
             #if key == "inORF" and os.path.isfile("./data/inORF/inORF_unique.fasta"): continue
             # Download
-            dir_path = "./data"
+            # dir_path = "./data"
+            dir_path = "/workspace/TaxonomicClassification-NGS-NN/data"
             
             create_dir(dir_path)
             file_name = download_urls[key].split("/")[-1]
