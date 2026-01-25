@@ -56,7 +56,8 @@ class PretrainedModels():
         download_urls = {
             "ProtBert": {"source": ["https://huggingface.co/Rostlab/prot_bert/resolve/main/config.json",
                                     "https://huggingface.co/Rostlab/prot_bert/resolve/main/pytorch_model.bin",
-                                    "https://huggingface.co/Rostlab/prot_bert/resolve/main/vocab.txt"],                         "frame": ["https://zenodo.org/record/4306420/files/metadata.json",
+                                    "https://huggingface.co/Rostlab/prot_bert/resolve/main/vocab.txt"],
+                         "frame": ["https://zenodo.org/record/4306420/files/metadata.json",
                                    "https://zenodo.org/record/4306420/files/state_dict.pth"],
                          "taxonomic": ["https://zenodo.org/record/4306499/files/metadata.json",
                                        "https://zenodo.org/record/4306499/files/state_dict.pth"]}
