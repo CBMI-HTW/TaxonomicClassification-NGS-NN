@@ -41,8 +41,10 @@ class PretrainedModels():
 
             model.load_state_dict(
                 torch.load(
-                    os.path.join(self.path, classifier, "state_dict.pth"), map_location=self.device
-                )
+                    os.path.join(self.path, classifier, "state_dict.pth"),
+                    map_location=self.device
+                ),
+                strict=False
             )
 
         if classifier == "frame":
