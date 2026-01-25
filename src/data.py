@@ -31,10 +31,10 @@ class SequenceReadingsDataset(torch.utils.data.Dataset):
             fasta_file = "./data/refseq/refseq_ds_all_off-frames_fb_DNA_test.fasta"
         elif test_type == "taxonomic":
             fasta_file = "./data/uniprot/uniprot_swiss-prot_vbh_p100d_w_test.fasta"
-        elif test_type == "inORF":
-            fasta_file = "./data/inORF/inORF_unique.fasta"
-        elif test_type == "SRR":
-            fasta_file = "./data/srr/SRR2940986_filtered.fasta"
+        # elif test_type == "inORF":
+        #     fasta_file = "./data/inORF/inORF_unique.fasta"
+        # elif test_type == "SRR":
+        #     fasta_file = "./data/srr/SRR2940986_filtered.fasta"
         else:
             fasta_file = test_type
 
