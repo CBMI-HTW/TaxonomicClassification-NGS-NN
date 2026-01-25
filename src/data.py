@@ -106,10 +106,11 @@ class SequenceReadingsDataset(torch.utils.data.Dataset):
         for key in download_urls:
             if key == "frame" and os.path.isfile("./data/refseq/refseq_ds_all_off-frames_fb_DNA_test.fasta"): continue
             if key == "taxonomic" and os.path.isfile("./data/uniprot/uniprot_swiss-prot_vbh_p100d_w_test.fasta"): continue
-            if key == "SRR" and os.path.isfile("./data/srr/SRR2940986_filtered.fasta"): continue
-            if key == "inORF" and os.path.isfile("./data/inORF/inORF_unique.fasta"): continue
+            #if key == "SRR" and os.path.isfile("./data/srr/SRR2940986_filtered.fasta"): continue
+            #if key == "inORF" and os.path.isfile("./data/inORF/inORF_unique.fasta"): continue
             # Download
             dir_path = "./data"
+            
             create_dir(dir_path)
             file_name = download_urls[key].split("/")[-1]
             file_path = os.path.join(dir_path, file_name)
