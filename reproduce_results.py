@@ -230,8 +230,8 @@ if __name__ == "__main__":
     reproduce_taxonomic_classifier_testset(pretrained_models, args.batch_size, os.path.join(args.output, "taxonomic"))    
 
     # inORF Classification
-    reproduce_inORF(pretrained_models, args.batch_size, os.path.join(args.output, "inORF"))
+    # reproduce_inORF(pretrained_models, args.batch_size, os.path.join(args.output, "inORF"))
 
     # SRR Classification
-    reproduce_SRR(pretrained_models, args.batch_size, os.path.join(args.output, "SRR"))
+    # reproduce_SRR(pretrained_models, args.batch_size, os.path.join(args.output, "SRR"))
     print("... script finished.")

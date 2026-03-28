@@ -82,7 +82,7 @@ if __name__ == "__main__":
         create_dir(args.output)
 
     # Initialize pretrained models
-    pretrained_models = PretrainedModels(args.pretrained_model, device=device)
+    pretrained_models = PretrainedModels(args.pretrained_model, pretrained_model_path="/workspace/TaxonomicClassification-NGS-NN/.models", device=device) # Update: set pretrained_model_path
 
     # Prepare data
     dataset = SequenceReadingsDataset(args.input)

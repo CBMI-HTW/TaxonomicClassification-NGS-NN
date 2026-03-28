@@ -41,7 +41,8 @@ class PretrainedModels():
 
             model.load_state_dict(
                 torch.load(
-                    os.path.join(self.path, classifier, "state_dict.pth"), map_location=self.device
+                    os.path.join(self.path, classifier, "state_dict.pth"),
+                    map_location=self.device
                 )
             )
 
@@ -54,9 +55,9 @@ class PretrainedModels():
         """ Downloads the pretrained classification models for a certain model type.
         """
         download_urls = {
-            "ProtBert": {"source": ["https://s3.amazonaws.com/models.huggingface.co/bert/Rostlab/prot_bert/config.json",
-                                    "https://cdn.huggingface.co/Rostlab/prot_bert/pytorch_model.bin",
-                                    "https://cdn.huggingface.co/Rostlab/prot_bert/vocab.txt"],
+            "ProtBert": {"source": ["https://huggingface.co/Rostlab/prot_bert/resolve/main/config.json",
+                                    "https://huggingface.co/Rostlab/prot_bert/resolve/main/pytorch_model.bin",
+                                    "https://huggingface.co/Rostlab/prot_bert/resolve/main/vocab.txt"],
                          "frame": ["https://zenodo.org/record/4306420/files/metadata.json",
                                    "https://zenodo.org/record/4306420/files/state_dict.pth"],
                          "taxonomic": ["https://zenodo.org/record/4306499/files/metadata.json",
